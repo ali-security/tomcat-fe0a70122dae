@@ -276,6 +276,10 @@ public class TestServerInfo {
      */
     @Test
     public void testAprVersionInfo() throws Exception {
+        // isAprAvailable() only initialises the native library once an
+        // AprLifecycleListener instance exists in this JVM; create one so the
+        // result does not depend on JUnit method order.
+        new AprLifecycleListener();
         // Only run if APR is available
         Assume.assumeTrue("APR not available", AprLifecycleListener.isAprAvailable());
 
