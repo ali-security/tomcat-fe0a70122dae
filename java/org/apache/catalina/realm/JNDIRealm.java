@@ -143,6 +143,7 @@ public class JNDIRealm extends RealmBase {
     public static final String DEREF_ALIASES = "java.naming.ldap.derefAliases";
 
     private static final String AUTHENTICATION_NAME_GSSAPI = "GSSAPI";
+    private static final String AUTHENTICATION_NAME_SIMPLE = "simple";
 
 
     /**
@@ -1834,10 +1835,8 @@ public class JNDIRealm extends RealmBase {
         // Elicit an LDAP bind operation using the provided user credentials
         try {
             userCredentialsAdd(context, dn, credentials);
-            // Need to make sure GSSAPI SASL authentication is not used if configured
-            if (AUTHENTICATION_NAME_GSSAPI.equals(preservedEnvironment.get(Context.SECURITY_AUTHENTICATION))) {
-                context.removeFromEnvironment(Context.SECURITY_AUTHENTICATION);
-            }
+            // Check credentials by performing a simple bind
+            context.addToEnvironment(Context.SECURITY_AUTHENTICATION, AUTHENTICATION_NAME_SIMPLE);
             if (containerLog.isTraceEnabled()) {
                 containerLog.trace("  binding as " + dn);
             }
@@ -1848,7 +1847,7 @@ public class JNDIRealm extends RealmBase {
                 containerLog.trace("  bind attempt failed", e);
             }
         } finally {
-            // Restore GSSAPI SASL if previously configured
+            // Restore any previously configured authentication mechanism
             restoreEnvironmentParameter(context, Context.SECURITY_AUTHENTICATION, preservedEnvironment);
             userCredentialsRemove(context);
         }
